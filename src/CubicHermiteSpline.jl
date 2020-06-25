@@ -34,7 +34,7 @@ function basis(t)
 end
 
 function findinterval(v, x)
-    for i in 1:length(x)
+    for i in eachindex(x)
         if x[i] == v
             return i, x[i], nothing
         elseif x[i] > v

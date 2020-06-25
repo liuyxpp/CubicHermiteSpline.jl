@@ -1,6 +1,6 @@
 # CubicHermiteSpline.jl
 
-**CubicHermiteSpline.jl** is a naive implementation of cubic Hermite spline interpolation for 1D data points in pure Julia. Currently, the 1st order gradient should be given by the user. It is most useful when the gradient happens to be available. When the function to be interpolated is smooth and the accuracy of the gradients is high, the cubic Hermite spline interpolation should perform extremely well. See a demonstration of the power of this interpolation technique in `doc/tutorial.ipynb`.
+**CubicHermiteSpline.jl** is a naive implementation of cubic Hermite spline interpolation for 1D data points in pure Julia. Currently, the 1st order gradient should be given by the user. It is most useful when the gradient happens to be available. When the function to be interpolated is smooth and the accuracy of the gradients is high, the cubic Hermite spline interpolation should perform extremely well. A demonstration of the power of this interpolation can be found [here](http://www.yxliu.group/2020/06/cubic-hermite-spline).
 
 ## Usage
 
@@ -58,4 +58,5 @@ Note that 1st order gradients at each data points should be provided by the user
 
 ## Links
 
-* Source code is available at [github.com](https://github.com/liuyxpp/CubicHermiteSpline.jl)
+* [Source code](https://github.com/liuyxpp/CubicHermiteSpline.jl)
+* [Documentation](http://www.yxliu.group/2020/06/cubic-hermite-spline)
