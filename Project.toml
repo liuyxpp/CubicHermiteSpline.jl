@@ -1,7 +1,7 @@
 name = "CubicHermiteSpline"
 uuid = "2338ea46-7d83-48cf-b44e-cf8e0b5b9cc1"
 authors = ["liuyxpp <liuyxpp@gmail.com>"]
-version = "0.2.0"
+version = "0.2.1"
 
 [deps]
 ArgCheck = "dce04be8-c92d-5529-be00-80e4d2c0e197"
