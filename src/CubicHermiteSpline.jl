@@ -3,7 +3,7 @@ module CubicHermiteSpline
 using ArgCheck
 
 export CubicHermiteSplineInterpolation
-export interp
+export interp, grad
 
 struct CubicHermiteSplineInterpolation
     x
@@ -33,6 +33,24 @@ function basis(t)
     return h00, h10, h01, h11
 end
 
+"""
+    basis_derivative(t)
+
+Compute the basis functions of cubic Hermite spline interpolation. They are:
+    H_{00} = 6t^2 - 6t = 6t(t-1)
+    H_{10} = 3t^2 - 4t + 1 = (3t-1)(t-1)
+    H_{01} = -6t^2 + 6t = -6t(t-1)
+    H_{11} = 3t^2 - 2t = t(3t - 2)
+"""
+function basis_derivative(t)
+    t2 = t * t
+    h00 = 6*t2 - 6*t
+    h10 = 3*t2 - 4*t + 1
+    h01 = -6*t2 + 6*t
+    h11 = 3*t2 - 2*t
+    return h00, h10, h01, h11
+end
+
 function findinterval(v, x)
     for i in eachindex(x)
         if x[i] == v
@@ -43,7 +61,7 @@ function findinterval(v, x)
     end
 end
 
-function interp(spl::CubicHermiteSplineInterpolation, v)
+function _interp(spl::CubicHermiteSplineInterpolation, v; grad=false)
     x = spl.x
     y = spl.y
     gradient = spl.gradient
@@ -52,18 +70,27 @@ function interp(spl::CubicHermiteSplineInterpolation, v)
 
     idx, x1, x2 = findinterval(v, x)
     if x2 === nothing
-       return y[idx]
+       return grad ? gradient[idx] : y[idx]
     end
+
+    # mapping (x1, x2) to (0, 1), h is the scaling constant
     t = (v - x1) / (x2 - x1)
     h = x2 - x1
     y1, y2 = y[idx], y[idx+1]
     k1, k2 = gradient[idx], gradient[idx+1]
 
-    h00, h10, h01, h11 = basis(t)
-    return y1*h00 + h*k1*h10 + y2*h01 + h*k2*h11
+    h00, h10, h01, h11 = grad ? basis_derivative(t) : basis(t)
+    r = y1*h00 + h*k1*h10 + y2*h01 + h*k2*h11
+
+    # Need to rescale the interpolated gradient before return
+    return grad ? (r/h) : r
 end
 
-(spl::CubicHermiteSplineInterpolation)(x::Real) = interp(spl, x)
-(spl::CubicHermiteSplineInterpolation)(x::AbstractVector) = [spl(v) for v in x]
+(spl::CubicHermiteSplineInterpolation)(v::Real; grad=false) = _interp(spl, v; grad)
+(spl::CubicHermiteSplineInterpolation)(x::AbstractVector; grad=false) = spl.(x; grad)
+
+# handy methods
+interp(spl::CubicHermiteSplineInterpolation, p) = spl(p)
+grad(spl::CubicHermiteSplineInterpolation, p) = spl(p; grad=true)
 
 end # module
