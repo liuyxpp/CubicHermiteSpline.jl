@@ -86,8 +86,8 @@ function _interp(spl::CubicHermiteSplineInterpolation, v; grad=false)
     return grad ? (r/h) : r
 end
 
-(spl::CubicHermiteSplineInterpolation)(v::Real; grad=false) = _interp(spl, v; grad)
-(spl::CubicHermiteSplineInterpolation)(x::AbstractVector; grad=false) = spl.(x; grad)
+(spl::CubicHermiteSplineInterpolation)(v::Real; grad=false) = _interp(spl, v; grad=grad)
+(spl::CubicHermiteSplineInterpolation)(x::AbstractVector; grad=false) = spl.(x; grad=grad)
 
 # handy methods
 interp(spl::CubicHermiteSplineInterpolation, p) = spl(p)
