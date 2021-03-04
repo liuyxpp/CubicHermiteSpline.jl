@@ -87,6 +87,12 @@ Note that 1st order gradients at each data points should be provided by the user
 * To support 2D and higher dimension data points.
 * To allow computing gradients from data points when gradients are not provided by the user.
 
+## Contribute
+
+* Star the package on [github.com](https://github.com/liuyxpp/CubicHermiteSpline.jl).
+* File an issue or make a pull request on [github.com](https://github.com/liuyxpp/CubicHermiteSpline.jl).
+* Contact the author via email <lyx@fudan.edu.cn>.
+
 ## Links
 
 * [Source code](https://github.com/liuyxpp/CubicHermiteSpline.jl)
