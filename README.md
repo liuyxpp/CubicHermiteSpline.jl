@@ -13,7 +13,7 @@ Below shows a trivial example when the function is a cubic polynomial. In such c
 
 First, prepare a set of data points to be interpolated. Note that here we use a cubic polynomial function which can be exactly interpolated by the cubic Hermite spline method.
 
-```console
+```julia
 julia> using CubicHermiteSpline
 
 julia> f(x) = x^3 - 3x^2 + 2x - 5;
@@ -35,7 +35,7 @@ julia> y = f.(x)
 
 The gradients at each data points are also computed which is required by the cubic Hermite spline method.
 
-```console
+```julia
 julia> gradient = df.(x)
 6-element Array{Float64,1}:
   2.0
@@ -48,13 +48,13 @@ julia> gradient = df.(x)
 
 Then, we construct a interpolation instance by using CubicHermiteSpline package.
 
-```console
+```julia
 julia> spl = CubicHermiteSplineInterpolation(x, y, gradient);
 ```
 
 Perform interpolation for a single input x.
 
-```console
+```julia
 julia> xi = 1.2;
 
 julia> yi = spl(xi)  # Or using interp(spl, xi)
@@ -63,7 +63,7 @@ julia> yi = spl(xi)  # Or using interp(spl, xi)
 
 Perform interpolation for an array of input x.
 
-```console
+```julia
 julia> xi = [0.5, 1.2];
 
 julia> yi = spl(xi)  # Or using interp(spl, xi) 
@@ -74,7 +74,7 @@ julia> yi = spl(xi)  # Or using interp(spl, xi)
 
 The 1st order derivative of the interpolation can be obtained.
 
-```console
+```julia
 julia> xi = 1.2;
 
 julia> ki = spl(xi; grad=true)  # Or using grad(spl, xi)
