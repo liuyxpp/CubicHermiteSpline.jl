@@ -184,7 +184,7 @@ function _grad(spl::BivariateCHSInterpolation, x, y)
     try
         tri = jump_and_march(triangles, [x, y])
     catch
-        return NaN
+        return (NaN, NaN)
     end
 
     i, j, k = tri
