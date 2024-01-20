@@ -1,10 +1,29 @@
-struct CubicHermiteSplineInterpolation{T, R}
+struct UnivariateCHSInterpolation{T}
     x::Vector{T}
     y::Vector{T}
-    gradient::Vector{T}
+    dydx::Vector{T}
+
+    function UnivariateCHSInterpolation(x::Vector{T}, y::Vector{T}, dydx::Vector{T}) where T
+        @argcheck length(x) == length(y)
+        @argcheck length(x) == length(dydx)
+        p = sortperm(x)
+        return new{T}(x[p], y[p], dydx[p])
+    end
 end
 
-const UnivariateCHSInterpolation = CubicHermiteSplineInterpolation
+const CubicHermiteSplineInterpolation = UnivariateCHSInterpolation
+
+function Base.show(io::IO, spl::UnivariateCHSInterpolation)
+    n = length(spl.x)
+    xmin, xmax = extrema(spl.x)
+    ymin, ymax = extrema(spl.y)
+    gmin, gmax = extrema(spl.dydx)
+    println(io, "Univariate Cubic Hermite Spline Interpolation")
+    println(io, "Number of points: ", n)
+    print(io, "x: [", xmin, ", ", xmax, "], ")
+    println(io, "y: [", ymin, ", ", ymax, "]")
+    print(io, "gradient: [", gmin, ", ", gmax, "]")
+end
 
 """
     basis(t)
@@ -55,23 +74,23 @@ function findinterval(v, x)
     end
 end
 
-function _interp(spl::CubicHermiteSplineInterpolation, v; grad=false)
+function _interp(spl::UnivariateCHSInterpolation, v; grad=false)
     x = spl.x
     y = spl.y
-    gradient = spl.gradient
+    dydx = spl.dydx
     @argcheck v >= x[1]
     @argcheck v <= x[end]
 
     idx, x1, x2 = findinterval(v, x)
     if x2 === nothing
-       return grad ? gradient[idx] : y[idx]
+       return grad ? dydx[idx] : y[idx]
     end
 
     # mapping (x1, x2) to (0, 1), h is the scaling constant
     t = (v - x1) / (x2 - x1)
     h = x2 - x1
     y1, y2 = y[idx], y[idx+1]
-    k1, k2 = gradient[idx], gradient[idx+1]
+    k1, k2 = dydx[idx], dydx[idx+1]
 
     h00, h10, h01, h11 = grad ? basis_derivative(t) : basis(t)
     r = y1*h00 + h*k1*h10 + y2*h01 + h*k2*h11
@@ -80,9 +99,9 @@ function _interp(spl::CubicHermiteSplineInterpolation, v; grad=false)
     return grad ? (r/h) : r
 end
 
-(spl::CubicHermiteSplineInterpolation)(v::Real; grad=false) = _interp(spl, v; grad=grad)
-(spl::CubicHermiteSplineInterpolation)(x::AbstractVector; grad=false) = spl.(x; grad=grad)
+(spl::UnivariateCHSInterpolation)(v::Real; grad=false) = _interp(spl, v; grad=grad)
+(spl::UnivariateCHSInterpolation)(x::AbstractVector; grad=false) = spl.(x; grad=grad)
 
 # handy methods
-interp(spl::CubicHermiteSplineInterpolation, p) = spl(p)
-grad(spl::CubicHermiteSplineInterpolation, p) = spl(p; grad=true)
+interp(spl::UnivariateCHSInterpolation, p) = spl(p)
+grad(spl::UnivariateCHSInterpolation, p) = spl(p; grad=true)
