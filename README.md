@@ -4,10 +4,13 @@
 
 ## Features
 
-* Interpolation of data points
+* Univariate cubic Hermite spline interpolation for 1D data points (regular and irregular grids are both supported).
 * Gradient (1st order derivative) of the interpolation. (New in version 0.2.0)
+* Bivariate cubic Hermite spline interpolation for 2D data points (regular and irregular grids are both supported). (New in version 0.3.0)
 
 ## Usage
+
+### 1D Interpolation
 
 Below shows a trivial example when the function is a cubic polynomial. In such case, the function can be exactly interpolated.
 
@@ -49,7 +52,7 @@ julia> gradient = df.(x)
 Then, we construct a interpolation instance by using CubicHermiteSpline package.
 
 ```julia
-julia> spl = CubicHermiteSplineInterpolation(x, y, gradient);
+julia> spl = UnivariateCHSInterpolation(x, y, gradient);
 ```
 
 Perform interpolation for a single input x.
@@ -66,7 +69,7 @@ Perform interpolation for an array of input x.
 ```julia
 julia> xi = [0.5, 1.2];
 
-julia> yi = spl(xi)  # Or using interp(spl, xi) 
+julia> yi = spl(xi)
 2-element Array{Float64,1}:
  -4.625
  -5.192
@@ -80,12 +83,31 @@ julia> xi = 1.2;
 julia> ki = spl(xi; grad=true)  # Or using grad(spl, xi)
 ```
 
-Note that 1st order gradients at each data points should be provided by the user. Please see `doc/tutorial.ipynb` for a detailed demonstration of the usage of this package.
+Note that 1st order derivatives at each data point should be provided by the user. Please see `doc/tutorial_univariate.ipynb` for a detailed example of the univariate cubic Hermite spline interpolation.
 
-## TODO
+### 2D Interpolation
 
-* To support 2D and higher dimension data points.
-* To allow computing gradients from data points when gradients are not provided by the user.
+Construct a 2D interpolation instance:
+
+```julia
+spl2d = BivariateCHSInterpolation(rand(100), rand(100), rand(100), rand(100), rand(100))
+```
+
+Perform interpolation for a single input point (x, y):
+
+```julia
+spl2d(x, y)
+# Or use
+interp(spl2d, x, y)
+```
+
+Compute the interpolated 1st order derivatives at a single input point (x, y):
+
+```julia
+grad(spl2d, x, y)
+```
+
+Please see `doc/tutorial_bivariate.ipynb` for a concrete example of bivariate cubic Hermite spline interpolation.
 
 ## Contribute
 
