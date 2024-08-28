@@ -39,7 +39,7 @@ julia> y = f.(x)
 The gradients at each data points are also computed which is required by the cubic Hermite spline method.
 
 ```julia
-julia> gradient = df.(x)
+julia> dydx = df.(x)
 6-element Array{Float64,1}:
   2.0
  -0.25
@@ -52,7 +52,7 @@ julia> gradient = df.(x)
 Then, we construct a interpolation instance by using CubicHermiteSpline package.
 
 ```julia
-julia> spl = UnivariateCHSInterpolation(x, y, gradient);
+julia> spl = UnivariateCHSInterpolation(x, y, dydx);
 ```
 
 Perform interpolation for a single input x.
@@ -90,7 +90,8 @@ Note that 1st order derivatives at each data point should be provided by the use
 Construct a 2D interpolation instance:
 
 ```julia
-spl2d = BivariateCHSInterpolation(rand(100), rand(100), rand(100), rand(100), rand(100))
+x, y, z, dzdx, dzdy = rand(100), rand(100), rand(100), rand(100), rand(100)
+spl2d = BivariateCHSInterpolation(x, y, z, dzdx, dzdy)
 ```
 
 Perform interpolation for a single input point (x, y):
