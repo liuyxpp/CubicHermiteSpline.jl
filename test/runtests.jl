@@ -69,10 +69,10 @@ end
     # Cubic Hermite spline interpolation should exactly interpolate the 3rd order polynomial.
     f(x) = x^3 - 3x^2 + 2x - 5
     df(x) = 3x^2 - 6x + 2
-    x = range(0, 2.5, step=0.5)
+    x = range(0, 2.5, step=0.5) |> collect
     y = f.(x)
-    gradient = df.(x)
-    spl = CubicHermiteSplineInterpolation(x, y, gradient)
+    dydx = df.(x)
+    spl = CubicHermiteSplineInterpolation(x, y, dydx)
 
     # Interpolate at the input data point, simply return input data
     xi = 0.5
@@ -100,8 +100,8 @@ end
     # x = range(0, 2.5, step=0.5)
     x = [0, 0.3, 0.8, 1.5, 2.7, 3]
     y = f.(x)
-    gradient = df.(x)
-    spl = CubicHermiteSplineInterpolation(x, y, gradient)
+    dydx = df.(x)
+    spl = CubicHermiteSplineInterpolation(x, y, dydx)
 
     # Interpolate at the input data point, simply return input data
     xi = 0.5
