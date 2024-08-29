@@ -7,13 +7,13 @@ struct BivariateCHSInterpolation{T, R}
     triangles::R
 end
 
-function BivariateCHSInterpolation(x::Vector{T}, y::Vector{T}, z::Vector{T}, dzdx::Vector{T}, dzdy::Vector{T}) where T
+function BivariateCHSInterpolation(x::AbstractVector{T}, y::AbstractVector{T}, z::AbstractVector{T}, dzdx::AbstractVector{T}, dzdy::AbstractVector{T}) where T
     @argcheck length(x) == length(y)
     @argcheck length(x) == length(z)
     @argcheck length(x) == length(dzdx)
     @argcheck length(x) == length(dzdy)
     triangles = triangulate([x'; y'])
-    return BivariateCHSInterpolation(x, y, z, dzdx, dzdy, triangles)
+    return BivariateCHSInterpolation(collect(x), collect(y), collect(z), collect(dzdx), collect(dzdy), triangles)
 end
 
 function Base.show(io::IO, spl::BivariateCHSInterpolation)

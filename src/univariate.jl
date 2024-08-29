@@ -3,11 +3,11 @@ struct UnivariateCHSInterpolation{T}
     y::Vector{T}
     dydx::Vector{T}
 
-    function UnivariateCHSInterpolation(x::Vector{T}, y::Vector{T}, dydx::Vector{T}) where T
+    function UnivariateCHSInterpolation(x::AbstractVector{T}, y::AbstractVector{T}, dydx::AbstractVector{T}) where T
         @argcheck length(x) == length(y)
         @argcheck length(x) == length(dydx)
         p = sortperm(x)
-        return new{T}(x[p], y[p], dydx[p])
+        return new{T}(collect(x[p]), collect(y[p]), collect(dydx[p]))
     end
 end
 
