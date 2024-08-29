@@ -156,12 +156,8 @@ end
 
 function _interp(spl::BivariateCHSInterpolation, x, y)
     triangles = spl.triangles
-    tri = nothing
-    try
-        tri = jump_and_march(triangles, [x, y])
-    catch
-        return NaN
-    end
+    tri = find_triangle(triangles, [x, y])
+    any(tri .< 0) && return NaN
 
     i, j, k = tri
     tri_points = get_point(triangles, i, j, k)
@@ -180,12 +176,8 @@ end
 
 function _grad(spl::BivariateCHSInterpolation, x, y)
     triangles = spl.triangles
-    tri = nothing
-    try
-        tri = jump_and_march(triangles, [x, y])
-    catch
-        return (NaN, NaN)
-    end
+    tri = find_triangle(triangles, [x, y])
+    any(tri .< 0) && return (NaN, NaN)
 
     i, j, k = tri
     tri_points = get_point(triangles, i, j, k)
