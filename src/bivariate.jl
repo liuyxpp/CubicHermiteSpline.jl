@@ -23,7 +23,7 @@ function Base.show(io::IO, spl::BivariateCHSInterpolation)
     fmin, fmax = extrema(spl.z)
     fxmin, fxmax = extrema(spl.dzdx)
     fymin, fymax = extrema(spl.dzdy)
-    nt = num_triangles(spl.triangles)
+    nt = num_solid_triangles(spl.triangles)
     println(io, "Bivariate Cubic Hermite Spline Interpolation")
     println(io, "Number of points: ", n)
     println(io, "Number of Delaunay triangles: ", nt)
@@ -74,17 +74,18 @@ function bchs_coefficients(l1, l2, l3, triangle)
     l331 = l3 * l3 * l1
     l332 = l3 * l3 * l2
     l123 = l1 * l2 * l3
-    α, β, γ = zeros(3), zeros(3), zeros(3)
-    α[1] = l111 + 3 * l112 + 3 * l113 + 2 * l123
-    α[2] = l222 + 3 * l221 + 3 * l223 + 2 * l123
-    α[3] = l333 + 3 * l331 + 3 * l332 + 2 * l123
-    β[1] = (x2 - x1) * (l112 + 0.5*l123) + (x3 - x1) * (l113 + 0.5*l123)
-    β[2] = (x1 - x2) * (l221 + 0.5*l123) + (x3 - x2) * (l223 + 0.5*l123)
-    β[3] = (x1 - x3) * (l331 + 0.5*l123) + (x2 - x3) * (l332 + 0.5*l123)
-    γ[1] = (y2 - y1) * (l112 + 0.5*l123) + (y3 - y1) * (l113 + 0.5*l123)
-    γ[2] = (y1 - y2) * (l221 + 0.5*l123) + (y3 - y2) * (l223 + 0.5*l123)
-    γ[3] = (y1 - y3) * (l331 + 0.5*l123) + (y2 - y3) * (l332 + 0.5*l123)
-
+    α1 = l111 + 3 * l112 + 3 * l113 + 2 * l123
+    α2 = l222 + 3 * l221 + 3 * l223 + 2 * l123
+    α3 = l333 + 3 * l331 + 3 * l332 + 2 * l123
+    β1 = (x2 - x1) * (l112 + l123/2) + (x3 - x1) * (l113 + l123/2)
+    β2 = (x1 - x2) * (l221 + l123/2) + (x3 - x2) * (l223 + l123/2)
+    β3 = (x1 - x3) * (l331 + l123/2) + (x2 - x3) * (l332 + l123/2)
+    γ1 = (y2 - y1) * (l112 + l123/2) + (y3 - y1) * (l113 + l123/2)
+    γ2 = (y1 - y2) * (l221 + l123/2) + (y3 - y2) * (l223 + l123/2)
+    γ3 = (y1 - y3) * (l331 + l123/2) + (y2 - y3) * (l332 + l123/2)
+    α = (α1, α2, α3)
+    β = (β1, β2, β3)
+    γ = (γ1, γ2, γ3)
     return α, β, γ
 end
 
@@ -103,63 +104,67 @@ function bchs_grad_coefficients(l1, l2, l3, triangle)
     l1y = (x3 - x2) / S
     l2y = (x1 - x3) / S
     l3y = (x2 - x1) / S
-    αx, βx, γx = zeros(3), zeros(3), zeros(3)
-    αy, βy, γy = zeros(3), zeros(3), zeros(3)
     a1 = 3 * l1 * l1 + 6 * l1 * l2 + 6 * l1 * l3 + 2 * l2 * l3
     a2 = 3 * l1 * l1 + 2 * l1 * l3
     a3 = 3 * l1 * l1 + 2 * l1 * l2
-    αx[1] = a1 * l1x + a2 * l2x + a3 * l3x
-    αy[1] = a1 * l1y + a2 * l2y + a3 * l3y
+    αx1 = a1 * l1x + a2 * l2x + a3 * l3x
+    αy1 = a1 * l1y + a2 * l2y + a3 * l3y
     a1 = 3 * l2 * l2 + 2 * l2 * l3
     a2 = 3 * l2 * l2 + 6 * l1 * l2 + 6 * l2 * l3 + 2 * l1 * l3
     a3 = 3 * l2 * l2 + 2 * l1 * l2
-    αx[2] = a1 * l1x + a2 * l2x + a3 * l3x
-    αy[2] = a1 * l1y + a2 * l2y + a3 * l3y
+    αx2 = a1 * l1x + a2 * l2x + a3 * l3x
+    αy2 = a1 * l1y + a2 * l2y + a3 * l3y
     a1 = 3 * l3 * l3 + 2 * l2 * l3
     a2 = 3 * l3 * l3 + 2 * l1 * l3
     a3 = 3 * l3 * l3 + 6 * l1 * l3 + 6 * l2 * l3 + 2 * l1 * l2
-    αx[3] = a1 * l1x + a2 * l2x + a3 * l3x
-    αy[3] = a1 * l1y + a2 * l2y + a3 * l3y
+    αx3 = a1 * l1x + a2 * l2x + a3 * l3x
+    αy3 = a1 * l1y + a2 * l2y + a3 * l3y
     b1 = 2 * l1 * l2 + 0.5 * l2 * l3
     b2 = l1 * l1 + 0.5 * l1 * l3
     b3 = 0.5 * l1 * l2
     c1 = 2 * l1 * l3 + 0.5 * l2 * l3
     c2 = 0.5 * l1 * l3
     c3 = l1 * l1 + 0.5 * l1 * l2
-    βx[1] = (x2 - x1) * (b1 * l1x + b2 * l2x + b3 * l3x) + (x3 - x1) * (c1 * l1x + c2 * l2x + c3 * l3x)
-    βy[1] = (x2 - x1) * (b1 * l1y + b2 * l2y + b3 * l3y) + (x3 - x1) * (c1 * l1y + c2 * l2y + c3 * l3y)
-    γx[1] = (y2 - y1) * (b1 * l1x + b2 * l2x + b3 * l3x) + (y3 - y1) * (c1 * l1x + c2 * l2x + c3 * l3x)
-    γy[1] = (y2 - y1) * (b1 * l1y + b2 * l2y + b3 * l3y) + (y3 - y1) * (c1 * l1y + c2 * l2y + c3 * l3y)
+    βx1 = (x2 - x1) * (b1 * l1x + b2 * l2x + b3 * l3x) + (x3 - x1) * (c1 * l1x + c2 * l2x + c3 * l3x)
+    βy1 = (x2 - x1) * (b1 * l1y + b2 * l2y + b3 * l3y) + (x3 - x1) * (c1 * l1y + c2 * l2y + c3 * l3y)
+    γx1 = (y2 - y1) * (b1 * l1x + b2 * l2x + b3 * l3x) + (y3 - y1) * (c1 * l1x + c2 * l2x + c3 * l3x)
+    γy1 = (y2 - y1) * (b1 * l1y + b2 * l2y + b3 * l3y) + (y3 - y1) * (c1 * l1y + c2 * l2y + c3 * l3y)
     b1 = l2 * l2 + 0.5 * l2 * l3
     b2 = 2 * l1 * l2 + 0.5 * l1 * l3
     b3 = 0.5 * l1 * l2
     c1 = 0.5 * l2 * l3
     c2 = 2 * l2 * l3 + 0.5 * l1 * l3
     c3 = l2 * l2 + 0.5 * l1 * l2
-    βx[2] = (x1 - x2) * (b1 * l1x + b2 * l2x + b3 * l3x) + (x3 - x2) * (c1 * l1x + c2 * l2x + c3 * l3x)
-    βy[2] = (x1 - x2) * (b1 * l1y + b2 * l2y + b3 * l3y) + (x3 - x2) * (c1 * l1y + c2 * l2y + c3 * l3y)
-    γx[2] = (y1 - y2) * (b1 * l1x + b2 * l2x + b3 * l3x) + (y3 - y2) * (c1 * l1x + c2 * l2x + c3 * l3x)
-    γy[2] = (y1 - y2) * (b1 * l1y + b2 * l2y + b3 * l3y) + (y3 - y2) * (c1 * l1y + c2 * l2y + c3 * l3y)
-    b1 = l3 * l3 + 0.5 * l2 * l3
-    b2 = 0.5 * l1 * l3
-    b3 = 2 * l1 * l3 + 0.5 * l1 * l2
-    c1 = 0.5 * l2 * l3
-    c2 = l3 * l3 + 0.5 * l1 * l3
-    c3 = 2 * l2 * l3 + 0.5 * l1 * l2
-    βx[3] = (x1 - x3) * (b1 * l1x + b2 * l2x + b3 * l3x) + (x2 - x3) * (c1 * l1x + c2 * l2x + c3 * l3x)
-    βy[3] = (x1 - x3) * (b1 * l1y + b2 * l2y + b3 * l3y) + (x2 - x3) * (c1 * l1y + c2 * l2y + c3 * l3y)
-    γx[3] = (y1 - y3) * (b1 * l1x + b2 * l2x + b3 * l3x) + (y2 - y3) * (c1 * l1x + c2 * l2x + c3 * l3x)
-    γy[3] = (y1 - y3) * (b1 * l1y + b2 * l2y + b3 * l3y) + (y2 - y3) * (c1 * l1y + c2 * l2y + c3 * l3y)
+    βx2 = (x1 - x2) * (b1 * l1x + b2 * l2x + b3 * l3x) + (x3 - x2) * (c1 * l1x + c2 * l2x + c3 * l3x)
+    βy2 = (x1 - x2) * (b1 * l1y + b2 * l2y + b3 * l3y) + (x3 - x2) * (c1 * l1y + c2 * l2y + c3 * l3y)
+    γx2 = (y1 - y2) * (b1 * l1x + b2 * l2x + b3 * l3x) + (y3 - y2) * (c1 * l1x + c2 * l2x + c3 * l3x)
+    γy2 = (y1 - y2) * (b1 * l1y + b2 * l2y + b3 * l3y) + (y3 - y2) * (c1 * l1y + c2 * l2y + c3 * l3y)
+    b1 = l3 * l3 + l2 * l3/2
+    b2 = l1 * l3/2
+    b3 = 2 * l1 * l3 + l1 * l2/2
+    c1 = l2 * l3/2
+    c2 = l3 * l3 + l1 * l3/2
+    c3 = 2 * l2 * l3 + l1 * l2/2
+    βx3 = (x1 - x3) * (b1 * l1x + b2 * l2x + b3 * l3x) + (x2 - x3) * (c1 * l1x + c2 * l2x + c3 * l3x)
+    βy3 = (x1 - x3) * (b1 * l1y + b2 * l2y + b3 * l3y) + (x2 - x3) * (c1 * l1y + c2 * l2y + c3 * l3y)
+    γx3 = (y1 - y3) * (b1 * l1x + b2 * l2x + b3 * l3x) + (y2 - y3) * (c1 * l1x + c2 * l2x + c3 * l3x)
+    γy3 = (y1 - y3) * (b1 * l1y + b2 * l2y + b3 * l3y) + (y2 - y3) * (c1 * l1y + c2 * l2y + c3 * l3y)
 
+    αx = (αx1, αx2, αx3)
+    αy = (αy1, αy2, αy3)
+    βx = (βx1, βx2, βx3)
+    βy = (βy1, βy2, βy3)
+    γx = (γx1, γx2, γx3)
+    γy = (γy1, γy2, γy3)
     return αx, βx, γx, αy, βy, γy
 end
 
 function _interp(spl::BivariateCHSInterpolation, x, y)
     triangles = spl.triangles
-    tri = find_triangle(triangles, [x, y])
-    any(tri .< 0) && return NaN
+    tri = find_triangle(triangles, (x, y))
+    DelaunayTriangulation.is_ghost_triangle(tri) && return NaN
 
-    i, j, k = tri
+    i, j, k = triangle_vertices(tri)
     tri_points = get_point(triangles, i, j, k)
     l1, l2, l3 = cartesian2baricentric(tri_points, x, y)
     z = (spl.z[i], spl.z[j], spl.z[k])
@@ -176,10 +181,10 @@ end
 
 function _grad(spl::BivariateCHSInterpolation, x, y)
     triangles = spl.triangles
-    tri = find_triangle(triangles, [x, y])
-    any(tri .< 0) && return (NaN, NaN)
+    tri = find_triangle(triangles, (x, y))
+    DelaunayTriangulation.is_ghost_triangle(tri)&& return (NaN, NaN)
 
-    i, j, k = tri
+    i, j, k = triangle_vertices(tri)
     tri_points = get_point(triangles, i, j, k)
     l1, l2, l3 = cartesian2baricentric(tri_points, x, y)
     z = (spl.z[i], spl.z[j], spl.z[k])
